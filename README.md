@@ -34,3 +34,13 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/testdb
 spring.datasource.username=db_user
 spring.datasource.password=abcd1234
 ```
+
+### (4) Lombok
+https://projectlombok.org/setup/gradle
+
+```
+dependencies {
+	compileOnly 'org.projectlombok:lombok:1.18.6'
+	annotationProcessor 'org.projectlombok:lombok:1.18.6'
+}
+```
