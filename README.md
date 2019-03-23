@@ -149,3 +149,19 @@ task domaGenTestCases {
 }
 ```
 
+doma-template/lib.ftl
+```
+<#assign annotationHash={ "ConfigAutowireable": "org.seasar.doma.boot.ConfigAutowireable" }>
+```
+
+doma-template/dao.ftl
+```
+<#list lib.annotationHash?values as annotationImportName>
+import ${annotationImportName};
+</#list>
+
+
+<#list lib.annotationHash?keys as annotation>
+@${annotation}
+</#list>
+```
