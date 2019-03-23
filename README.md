@@ -44,3 +44,108 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.6'
 }
 ```
+
+### (5) Doma
+https://doma.readthedocs.io/en/stable/build/#build-with-gradle
+
+```
+task copyDomaResources(type: Sync)  {
+    from sourceSets.main.resources.srcDirs
+    into compileJava.destinationDir
+    include 'doma.compile.config'
+    include 'META-INF/**/*.sql'
+    include 'META-INF/**/*.script'
+}
+
+compileJava {
+    // Depend on the above task
+    dependsOn copyDomaResources
+    options.encoding = 'UTF-8'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+    // Disable the annotation processors during the test run
+    options.compilerArgs = ['-proc:none']
+}
+
+dependencies {
+    annotationProcessor "org.seasar.doma:doma:2.24.0"
+    implementation "org.seasar.doma:doma:2.24.0"
+}
+```
+
+- Eclipse Setting
+https://doma.readthedocs.io/en/stable/getting-started-eclipse/
+https://doma.readthedocs.io/en/stable/annotation-processing/#setting-options-in-eclipse
+
+### (6) Doma Gen
+https://doma-gen.readthedocs.io/en/stable/gen/#run-with-gradle
+
+
+- Create doma-template folder
+- Add some settings as below
+```
+def dbUrl = 'jdbc:postgresql://127.0.0.1:5432/testdb'
+def dbUser = 'db_user'
+def dbPassword = 'abcd1234'
+def basePackage = 'com.example.springbootboilerplate'
+
+configurations {
+    domaGenRuntime
+}
+
+dependencies {
+	// Doma-Gen
+	domaGenRuntime "org.seasar.doma:doma-gen:${domaVersion}"
+    domaGenRuntime 'org.postgresql:postgresql'
+}
+
+task domaGen {
+    group = 'doma-gen'
+    doLast {
+        ant.taskdef(resource: 'domagentask.properties',
+            classpath: configurations.domaGenRuntime.asPath)
+        ant.gen(
+        	url: "${dbUrl}",
+			user: "${dbUser}",
+			password: "${dbPassword}",
+			versionColumnNamePattern: 'version',
+			templatePrimaryDir: 'doma-template'
+        ) {
+	        entityConfig(
+				packageName: "${basePackage}.entity",
+				overwrite: true,
+				overwriteListener: true
+			)
+	        daoConfig(
+				packageName: "${basePackage}.dao",
+				overwrite: true,
+			)
+	        sqlConfig(
+				overwrite: true,
+			)
+        }
+    }
+}
+
+task domaGenTestCases {
+    group = 'doma-gen'
+    doLast {
+        ant.taskdef(resource: 'domagentask.properties',
+            classpath: configurations.domaGenRuntime.asPath)
+        ant.gen(
+        	url: "${dbUrl}",
+			user: "${dbUser}",
+			password: "${dbPassword}",
+        ) {
+            sqlTestCaseConfig {
+                fileset(dir: 'src/main/resources') {
+                    include(name: 'META-INF/**/*.sql')
+                }
+            }
+        }
+    }
+}
+```
+
